@@ -16,7 +16,6 @@ st.markdown("### Where SME Curiosity Meets Opportunity")
 st.markdown("---")
 
 
-
 YOUR_API_KEY = "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"
 topics = [
             "Waaree Technologies Ltd",
@@ -24,7 +23,8 @@ topics = [
             "Infonative Solutions Ltd",
             "Toss the Coin Ltd",
         ]
-rIndex=2
+import random
+rIndex=random.randint(0, 3)
 feature_message = [
     {
         "role": "system",
@@ -71,12 +71,12 @@ market_performance_message = [
         "role": "user",
         "content": (
             "Give me the latest value of the BSE SME IPO index as of now in JSON format with keys"
-             "index_value,timestamp, change,change_percent , open,high,low,prev_close"
+             "index_value,timestamp, change, change_percent , open, high, low, prev_close"
         ),
     },
 ]
 
-market_graph_message = [
+weekly_price_message = [
     {
         "role": "system",
         "content": (
@@ -87,7 +87,7 @@ market_graph_message = [
 
 "Steps:"
 "1. Fetch the details from the BSE SME Market. "
-"2. Output should be in the following JSON format with no addditional text"
+"2. Do not include any code block formatting, no triple backticks, and no language tags. Output only raw JSON."
 '{ [ {"Date": "May 16, 2025", "Closing Price": 93290.24},]}'
 
         ),
@@ -95,36 +95,12 @@ market_graph_message = [
     {   
         "role": "user",
         "content": (
-            "1. Get the closing price of the scrip S&P BSE SME IPO (BSE: 1146) for the last 5 sessions int he following JSON format that can be used to populate the graph :"
+            "1. Get the closing price of the scrip S&P BSE SME IPO (BSE: 1146) for the last 10 sessions in the following JSON format that can be used to populate the graph :"
              "Date, Closing price"
         ),
     },
 ]
 
-one_time_scriplist = [
-    {
-        "role": "system",
-        "content": (
-            "You are a helpful AI assistant."
-"Rules:"
-"1. Provide only the final answer. It is important that you do not include any explanation on the steps below."
-"2. Do not show the intermediate steps information."
-
-"Steps:"
-"1. Fetch the details from the BSE SME Market. "
-"2. Output should be in the following JSON format with no addditional text"
-'{ [ {"Company Name": "Infonative Solutions Ltd", "Compnay Code": 12314, "Closing Price": 123.05},]}'
-
-        ),
-    },
-    {   
-        "role": "user",
-        "content": (
-            "1. Get all the listed scripts from the  BSE SME market in the following JSON format that can be used to populate the list :"
-             "Company Name, Compnay Code, Closing Price"
-        ),
-    },
-]
 
 news_latest_message = [
     {
@@ -158,54 +134,41 @@ def callapi(message):
 
 
 #Page display
-cola,colb=st.columns(2)
-with cola:
-    st.header("Welcome to _Your_ own SME page", divider="gray")
-with colb:
-    st.write("BSESME IPO 97,095.12 +1,309.48 +1.37%")        
+# cola,colb=st.columns(2)
+# with cola:
+#     st.header("Welcome to _Your_ own SME page", divider="gray")
+# with colb:
+#     st.write("BSESME IPO 97,095.12 +1,309.48 +1.37%")        
 
-#st.write(response["choices"][0]["message"]["content"])
-if 0:
+#Featured SME
+if 1:
     response=callapi(feature_message)
-    st.write(str(topics[rIndex]))
+    st.write("Featuresd SME")
+    st.write("Company Name: " + topics[rIndex])
+    #st.write(str(topics[rIndex]))
     st.write(response.choices[0].message.content)
     st.write("References:")
     st.write(response.citations)
-# chat completion with streaming
-#response_stream = client.chat.completions.create(
-#    model="sonar-pro",
-#    messages=messages,
-#    stream=True,
-#)
-#for response in response_stream:
-#    print(response)
-#    st.write("Hello world:")
-#    st.write(response)
 
 import pandas as pd
 import json
-# index prices
-# featured SME
-# recent news
- 
-# graph 
-if 0:
-    response=callapi(one_time_scriplist)
-    data= response.choices[0].message.content
-    datajson= json.loads(data)
-    df = pd.DataFrame.from_dict(datajson, orient='columns')
-    st.dataframe(df) 
-    st.table(df)
 
-    
-if 0:
-    response=callapi(one_time_scriplist)
+if 1:
+    response=callapi(news_latest_message)
+    st.write("SME News")
     data= response.choices[0].message.content
     st.write(data)
+    
+if 1:
+    response=callapi(weekly_price_message)
+    st.write("My Graph")
+    data= response.choices[0].message.content
+    #st.write(data)
+    print(data)
     datajson= json.loads(data)
     df = pd.DataFrame.from_dict(datajson, orient='columns')
-    st.dataframe(df) 
-    st.table(df)
+    #st.dataframe(df) 
+    #st.table(df)
     
     st.line_chart(
     df,
@@ -246,7 +209,7 @@ if 1:
 
 
 #the sample trial one
-if 0:
+if 1:
     col1,col2=st.columns(2)
     with col1:
         st.subheader("Infonative Solutions Ltd")
@@ -290,7 +253,7 @@ try:
     chat1 = dict(Name = names, Message =  messages)
     st.table(chat1)
 except ValueError:
-    st.title("Enter your name and message into the sidebar, and post!")    
+    st.write("Enter your name and message into the sidebar, and post!")    
 
 #the one time set ups
 if 0:
@@ -301,9 +264,6 @@ if 0:
         st.write(processed_lines) 
         with open('LIST_BSE_SME2.txt', "w") as file:
             file.writelines(processed_lines) 
-
-
-
 #-------- Get the Mainboard data
 import requests
 from bs4 import BeautifulSoup
@@ -327,79 +287,63 @@ if 'historical_data' not in st.session_state:
     st.session_state.historical_data = []
 
 # Main content area with columns
-col1, col2 = st.columns([1, 2])
-
-with col1:
-    st.subheader("Current Index Data")
-    data = fetch_bse_sme_ipo_data()
-    
-    # Add data to historical record
-    st.session_state.historical_data.append(data)
-    
-    # Keep only last 100 data points
-    if len(st.session_state.historical_data) > 100:
-        st.session_state.historical_data = st.session_state.historical_data[-100:]
-    
-    # Display current value with color based on change
-    change_color = "green" if "+" in data["change"] else "red"
-    st.markdown(f"""
-    # <span style='color: {change_color};'>{data["index_value"]}</span>
-    ## <span style='color: {change_color};'>{data["change"]} ({data["change_percent"]})</span>
-    """, unsafe_allow_html=True)
-    
-    # Display other metrics
-    st.markdown("### Today's Range")
-    st.progress((float(data["low"].replace(",", "")) / float(data["high"].replace(",", ""))))
-    st.markdown(f"**Low:** {data['low']} | **High:** {data['high']}")
-    
-    # Additional metrics
-    metrics = {
-        "Open": data["open"],
-        "Previous Close": data["prev_close"],
-        "Last Updated": data["timestamp"]
-    }
-    
-    for label, value in metrics.items():
-        st.metric(label=label, value=value)
-
-with col2:
+if 1:
     st.write('Today')
     response=callapi(market_performance_message)
     data= response.choices[0].message.content
     print(data)
     try:
         dictdata = eval(data)
-        st.write(dictdata["index_value"])  # 97095.12
-        d_index_value=dictdata["index_value"]
-        d_change=dictdata["change"]        
-        d_change_percent=dictdata["change_percent"]
+        #st.write(dictdata["index_value"])  # 97095.12
+
         d_open=dictdata["open"]
-        d_high=dictdata["high"]
-        d_low=dictdata["low"]
+
         d_prev_close=dictdata["prev_close"]
         d_timestamp=dictdata["timestamp"]
     except Exception as e:
         # Handle the exception
         st.write("Error:", e)
+        d_change=None
     
     # Display current value with color based on change
-    change_color = "red" if 0> d_change else "green"
-    st.markdown(f"""
-    # <span style='color: {change_color};'>{d_index_value}</span>
-    ## <span style='color: {change_color};'>{d_change} ({d_change_percent})</span>
-    """, unsafe_allow_html=True)
-    
+    try :
+        d_index_value=dictdata["index_value"]
+        d_change=dictdata["change"]        
+        d_change_percent=dictdata["change_percent"]
+        change_color = "red" if 0> d_change else "green"
+        st.markdown(f"""
+        # <span style='color: {change_color};'>{d_index_value}</span>
+        ## <span style='color: {change_color};'>{d_change} ({d_change_percent})</span>
+        """, unsafe_allow_html=True)
+    except Exception as e:
+        # Handle the exception
+        st.write("Error:", e)
+
+
     # Display other metrics
-    st.markdown("### Today's Range")
-    st.progress((float(d_low) / float(d_high)))
-    st.markdown(f"**Low:** {d_low} | **High:** {d_high}")
-    
+    try:
+        d_high=dictdata["high"]
+        d_low=dictdata["low"]
+        st.markdown("### Today's Range")
+        st.progress((float(d_low) / float(d_high)))
+        st.markdown(f"**Low:** {d_low} | **High:** {d_high}")
+    except Exception as e:
+        # Handle the exception
+        st.write("Error:", e)
+
     # Additional metrics
-    metrics = {
+    try:
+        d_open=dictdata["open"]
+        d_prev_close=dictdata["prev_close"]
+        d_timestamp=dictdata["timestamp"]
+        metrics = {
         "Open": d_open,
         "Previous Close": d_prev_close,
         "Last Updated": d_timestamp
     }
     
-    for label, value in metrics.items():
-        st.metric(label=label, value=value)        
+        for label, value in metrics.items():
+            st.metric(label=label, value=value)        
+    except Exception as e:
+        # Handle the exception
+        st.write("Temporary Error:", e)
